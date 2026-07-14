@@ -100,6 +100,8 @@ void App::Render()
         m_screenBuffer->SetPixel(lx, ly, 0xFF00FF00); 
     }*/
 
+    Draw3DWalls();
+
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
     m_wnd.Gfx().PresentBuffer(*m_screenBuffer);
     m_wnd.Gfx().EndFrame();
@@ -224,6 +226,115 @@ void App::Draw2DRays()
                 int ly = startScreenY + static_cast<int>(static_cast<float>(endScreenY - startScreenY) * t);
 
                 m_screenBuffer->SetPixel(lx, ly, 0xFFFFFF00);
+            }
+        }
+    }
+}
+
+void App::Draw3DWalls()
+{
+    const float FOV = 60.0f * (3.14159265f / 180.0f);
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
+
+    float startAngle = m_playerAngle - (FOV / 2.0f);
+    float angleStep = FOV / static_cast<float>(SCREEN_WIDTH);
+
+    for (int x = 0; x < SCREEN_WIDTH; ++x)
+    {
+        float rayAngle = startAngle + static_cast<float>(x) * angleStep;
+
+        float rayDirX = std::cos(rayAngle);
+        float rayDirY = std::sin(rayAngle);
+
+        int mapX = static_cast<int>(m_playerX);
+        int mapY = static_cast<int>(m_playerY);
+
+        float deltaDistX = (rayDirX == 0) ? 1e30f : std::abs(1.0f / rayDirX);
+        float deltaDistY = (rayDirY == 0) ? 1e30f : std::abs(1.0f / rayDirY);
+
+        float sideDistX;
+        float sideDistY;
+        int stepX;
+        int stepY;
+
+        if (rayDirX < 0)
+        {
+            stepX = -1;
+            sideDistX = (m_playerX - static_cast<float>(mapX)) * deltaDistX;
+        }
+        else
+        {
+            stepX = 1;
+            sideDistX = (static_cast<float>(mapX + 1) - m_playerX) * deltaDistX;
+        }
+
+        if (rayDirY < 0)
+        {
+            stepY = -1;
+            sideDistY = (m_playerY - static_cast<float>(mapY)) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = (static_cast<float>(mapY + 1) - m_playerY) * deltaDistY;
+        }
+
+        bool hit = false;
+        int side = 0;
+        while (!hit)
+        {
+            if (sideDistX < sideDistY)
+            {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            }
+            else
+            {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+
+            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
+            if (m_map[mapY][mapX] > 0) hit = true;
+        }
+
+        if (hit)
+        {
+            float perpWallDist;
+            if (side == 0) perpWallDist = (sideDistX - deltaDistX);
+            else           perpWallDist = (sideDistY - deltaDistY);
+
+            float correctedDist = perpWallDist * std::cos(rayAngle - m_playerAngle);
+
+            if (correctedDist < 0.01f) correctedDist = 0.01f;
+
+            int lineHeight = static_cast<int>(640.0f / correctedDist);
+
+            int drawStart = (SCREEN_HEIGHT - lineHeight) / 2;
+            int drawEnd = (SCREEN_HEIGHT + lineHeight) / 2;
+
+            if (drawStart < 0) drawStart = 0;
+            if (drawEnd >= SCREEN_HEIGHT) drawEnd = SCREEN_HEIGHT - 1;
+
+            uint32_t wallColor = (side == 0) ? 0xFFFFFFFF : 0xFFCCCCCC;
+
+            for (int y = 0; y < SCREEN_HEIGHT; ++y)
+            {
+                if (y < drawStart)
+                {
+                    m_screenBuffer->SetPixel(x, y, 0xFF222233);
+                }
+                else if (y >= drawStart && y <= drawEnd)
+                {
+                    m_screenBuffer->SetPixel(x, y, wallColor);
+                }
+                else
+                {
+                    m_screenBuffer->SetPixel(x, y, 0xFF111111);
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ private:
 
     void Draw2DMap();
     void Draw2DRays();
+    void Draw3DWalls();
 
 private:
     Window m_wnd;
