@@ -24,6 +24,7 @@ private:
     void Render();
 
     void Draw2DMap();
+    void Draw2DPlayer();
     void Draw2DRays();
     void Draw3DWalls();
 
@@ -52,7 +53,12 @@ private:
     // PLAYER
     float m_playerX = 3.5f;
     float m_playerY = 3.5f;
-    float m_playerAngle = 0.0f;
+
+    float m_dirX = 1.0f;
+    float m_dirY = 0.0f;
+
+    float m_planeX = 0.0f;
+    float m_planeY = 0.66f;
 
     static constexpr float MOVE_SPEED = 2.0f;
     static constexpr float ROT_SPEED = 1.5f;

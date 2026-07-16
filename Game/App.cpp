@@ -32,29 +32,37 @@ void App::Update(float dt)
 {
     if (m_wnd.kbd.IsKeyPressed('A'))
     {
-        m_playerAngle -= ROT_SPEED * dt;
+        float oldDirX = m_dirX;
+        m_dirX = m_dirX * std::cos(-ROT_SPEED * dt) - m_dirY * std::sin(-ROT_SPEED * dt);
+        m_dirY = oldDirX * std::sin(-ROT_SPEED * dt) + m_dirY * std::cos(-ROT_SPEED * dt);
+
+        float oldPlaneX = m_planeX;
+        m_planeX = m_planeX * std::cos(-ROT_SPEED * dt) - m_planeY * std::sin(-ROT_SPEED * dt);
+        m_planeY = oldPlaneX * std::sin(-ROT_SPEED * dt) + m_planeY * std::cos(-ROT_SPEED * dt);
     }
     if (m_wnd.kbd.IsKeyPressed('D'))
     {
-        m_playerAngle += ROT_SPEED * dt;
-    }
+        float oldDirX = m_dirX;
+        m_dirX = m_dirX * std::cos(ROT_SPEED * dt) - m_dirY * std::sin(ROT_SPEED * dt);
+        m_dirY = oldDirX * std::sin(ROT_SPEED * dt) + m_dirY * std::cos(ROT_SPEED * dt);
 
-    const float PI2 = 2.0f * 3.14159265f;
-    if (m_playerAngle < 0.0f) m_playerAngle += PI2;
-    if (m_playerAngle > PI2)  m_playerAngle -= PI2;
+        float oldPlaneX = m_planeX;
+        m_planeX = m_planeX * std::cos(ROT_SPEED * dt) - m_planeY * std::sin(ROT_SPEED * dt);
+        m_planeY = oldPlaneX * std::sin(ROT_SPEED * dt) + m_planeY * std::cos(ROT_SPEED * dt);
+    }
 
     float moveX = 0.0f;
     float moveY = 0.0f;
 
     if (m_wnd.kbd.IsKeyPressed('W'))
     {
-        moveX += std::cos(m_playerAngle) * MOVE_SPEED * dt;
-        moveY += std::sin(m_playerAngle) * MOVE_SPEED * dt;
+        moveX += m_dirX * MOVE_SPEED * dt;
+        moveY += m_dirY * MOVE_SPEED * dt;
     }
     if (m_wnd.kbd.IsKeyPressed('S'))
     {
-        moveX -= std::cos(m_playerAngle) * MOVE_SPEED * dt;
-        moveY -= std::sin(m_playerAngle) * MOVE_SPEED * dt;
+        moveX -= m_dirX * MOVE_SPEED * dt;
+        moveY -= m_dirY * MOVE_SPEED * dt;
     }
 
     float newX = m_playerX + moveX;
@@ -76,29 +84,8 @@ void App::Render()
     m_screenBuffer->Clear(0xFF1A1A1A);
 
     Draw2DMap();
-
     Draw2DRays();
-
-    int pScreenX = static_cast<int>(m_playerX * TILE_SIZE);
-    int pScreenY = static_cast<int>(m_playerY * TILE_SIZE);
-
-    for (int sy = pScreenY - 4; sy < pScreenY + 4; ++sy)
-    {
-        for (int sx = pScreenX - 4; sx < pScreenX + 4; ++sx)
-        {
-            m_screenBuffer->SetPixel(sx, sy, 0xFFFF0000); 
-        }
-    }
-
-    /*int lineEndX = pScreenX + static_cast<int>(std::cos(m_playerAngle) * 20.0f);
-    int lineEndY = pScreenY + static_cast<int>(std::sin(m_playerAngle) * 20.0f);
-
-    for (float t = 0.0f; t <= 5.0f; t += 0.2f)
-    {
-        int lx = pScreenX + static_cast<int>((lineEndX - pScreenX) * t);
-        int ly = pScreenY + static_cast<int>((lineEndY - pScreenY) * t);
-        m_screenBuffer->SetPixel(lx, ly, 0xFF00FF00); 
-    }*/
+    Draw2DPlayer();
 
     Draw3DWalls();
 
@@ -130,20 +117,40 @@ void App::Draw2DMap()
     }
 }
 
+void App::Draw2DPlayer()
+{
+    int pScreenX = static_cast<int>(m_playerX * TILE_SIZE);
+    int pScreenY = static_cast<int>(m_playerY * TILE_SIZE);
+
+    for (int sy = pScreenY - 4; sy < pScreenY + 4; ++sy)
+    {
+        for (int sx = pScreenX - 4; sx < pScreenX + 4; ++sx)
+        {
+            m_screenBuffer->SetPixel(sx, sy, 0xFFFF0000);
+        }
+    }
+
+    int lineEndX = pScreenX + static_cast<int>(m_dirX * 20.0f);
+    int lineEndY = pScreenY + static_cast<int>(m_dirY * 20.0f);
+
+    for (float t = 0.0f; t <= 5.0f; t += 0.1f)
+    {
+        int lx = pScreenX + static_cast<int>((lineEndX - pScreenX) * t);
+        int ly = pScreenY + static_cast<int>((lineEndY - pScreenY) * t);
+        m_screenBuffer->SetPixel(lx, ly, 0xFF0000FF);
+    }
+}
+
 void App::Draw2DRays()
 {
-    const float FOV = 60.0f * (3.14159265f / 180.0f);
     const int NUM_RAYS = 60; 
-
-    float startAngle = m_playerAngle - (FOV / 2.0f);
-    float angleStep = FOV / static_cast<float>(NUM_RAYS);
 
     for (int i = 0; i < NUM_RAYS; ++i)
     {
-        float rayAngle = startAngle + static_cast<float>(i) * angleStep;
+        float cameraX = 2.0f * static_cast<float>(i) / static_cast<float>(NUM_RAYS) - 1.0f;
 
-        float rayDirX = std::cos(rayAngle);
-        float rayDirY = std::sin(rayAngle);
+        float rayDirX = m_dirX + m_planeX * cameraX;
+        float rayDirY = m_dirY + m_planeY * cameraX;
 
         int mapX = static_cast<int>(m_playerX);
         int mapY = static_cast<int>(m_playerY);
@@ -233,19 +240,15 @@ void App::Draw2DRays()
 
 void App::Draw3DWalls()
 {
-    const float FOV = 60.0f * (3.14159265f / 180.0f);
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
 
-    float startAngle = m_playerAngle - (FOV / 2.0f);
-    float angleStep = FOV / static_cast<float>(SCREEN_WIDTH);
-
     for (int x = 0; x < SCREEN_WIDTH; ++x)
     {
-        float rayAngle = startAngle + static_cast<float>(x) * angleStep;
+        float cameraX = 2.0f * static_cast<float>(x) / static_cast<float>(SCREEN_WIDTH) - 1.0f;
 
-        float rayDirX = std::cos(rayAngle);
-        float rayDirY = std::sin(rayAngle);
+        float rayDirX = m_dirX + m_planeX * cameraX;
+        float rayDirY = m_dirY + m_planeY * cameraX;
 
         int mapX = static_cast<int>(m_playerX);
         int mapY = static_cast<int>(m_playerY);
@@ -307,11 +310,7 @@ void App::Draw3DWalls()
             if (side == 0) perpWallDist = (sideDistX - deltaDistX);
             else           perpWallDist = (sideDistY - deltaDistY);
 
-            float correctedDist = perpWallDist * std::cos(rayAngle - m_playerAngle);
-
-            if (correctedDist < 0.01f) correctedDist = 0.01f;
-
-            int lineHeight = static_cast<int>(640.0f / correctedDist);
+            int lineHeight = static_cast<int>(640.0f / perpWallDist);
 
             int drawStart = (SCREEN_HEIGHT - lineHeight) / 2;
             int drawEnd = (SCREEN_HEIGHT + lineHeight) / 2;
