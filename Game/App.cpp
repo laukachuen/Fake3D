@@ -68,14 +68,14 @@ void App::Update(float dt)
     float newX = m_playerX + moveX;
     float newY = m_playerY + moveY;
 
-    if (m_map[static_cast<int>(m_playerY)][static_cast<int>(newX)] == 0)
+    if (CanMove(newX, m_playerY))
     {
-        m_playerX = newX; 
+        m_playerX = newX;
     }
 
-    if (m_map[static_cast<int>(newY)][static_cast<int>(m_playerX)] == 0)
+    if (CanMove(m_playerX, newY))
     {
-        m_playerY = newY; 
+        m_playerY = newY;
     }
 }
 
@@ -337,4 +337,35 @@ void App::Draw3DWalls()
             }
         }
     }
+}
+
+bool App::IsWall(float x, float y) const
+{
+    int mapX = static_cast<int>(x);
+    int mapY = static_cast<int>(y);
+
+    if (mapX < 0 || mapX >= MAP_WIDTH ||
+        mapY < 0 || mapY >= MAP_HEIGHT)
+    {
+        return true;
+    }
+    return m_map[mapY][mapX] != 0;
+}
+
+bool App::CanMove(float x, float y) const
+{
+    return
+        // Top Row
+        !IsWall(x - PLAYER_RADIUS, y - PLAYER_RADIUS) &&
+        !IsWall(x                , y - PLAYER_RADIUS) &&
+        !IsWall(x + PLAYER_RADIUS, y - PLAYER_RADIUS) &&
+
+        // Middle Row
+        !IsWall(x - PLAYER_RADIUS, y) &&
+        !IsWall(x + PLAYER_RADIUS, y) &&
+
+        // Bottom Row
+        !IsWall(x - PLAYER_RADIUS, y + PLAYER_RADIUS) &&
+        !IsWall(x                , y + PLAYER_RADIUS) &&
+        !IsWall(x + PLAYER_RADIUS, y + PLAYER_RADIUS);
 }

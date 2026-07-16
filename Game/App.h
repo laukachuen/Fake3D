@@ -28,6 +28,9 @@ private:
     void Draw2DRays();
     void Draw3DWalls();
 
+    bool IsWall(float x, float y) const;
+    bool CanMove(float x, float y) const;
+
 private:
     Window m_wnd;
     Timer m_timer;
@@ -62,5 +65,6 @@ private:
 
     static constexpr float MOVE_SPEED = 2.0f;
     static constexpr float ROT_SPEED = 1.5f;
+    static constexpr float PLAYER_RADIUS = 0.25f;
 
 };
