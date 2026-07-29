@@ -1,4 +1,5 @@
 #include "App.h"
+#include "Color.h"
 
 App::App()
     : m_wnd(800, 600, L"My Custom Game Framework", L"../../GameFramework/Framework/Shader/BufferShaders.hlsl")
@@ -81,7 +82,7 @@ void App::Update(float dt)
 
 void App::Render()
 {
-    m_screenBuffer->Clear(0xFF1A1A1A);
+    m_screenBuffer->Clear(Color::Black());
 
     Draw2DMap();
     Draw2DRays();
@@ -109,7 +110,7 @@ void App::Draw2DMap()
                 {
                     for (int px = startX; px < startX + TILE_SIZE - TILE_GAP; ++px)
                     {
-                        m_screenBuffer->SetPixel(px, py, 0xFFFFFFFF);
+                        m_screenBuffer->SetPixel(px, py, Color::White());
                     }
                 }
             }
@@ -126,7 +127,7 @@ void App::Draw2DPlayer()
     {
         for (int sx = pScreenX - 4; sx < pScreenX + 4; ++sx)
         {
-            m_screenBuffer->SetPixel(sx, sy, 0xFFFF0000);
+            m_screenBuffer->SetPixel(sx, sy, Color::Yellow());
         }
     }
 
@@ -137,7 +138,7 @@ void App::Draw2DPlayer()
     {
         int lx = pScreenX + static_cast<int>((lineEndX - pScreenX) * t);
         int ly = pScreenY + static_cast<int>((lineEndY - pScreenY) * t);
-        m_screenBuffer->SetPixel(lx, ly, 0xFF0000FF);
+        m_screenBuffer->SetPixel(lx, ly, Color::Red());
     }
 }
 
@@ -232,7 +233,7 @@ void App::Draw2DRays()
                 int lx = startScreenX + static_cast<int>(static_cast<float>(endScreenX - startScreenX) * t);
                 int ly = startScreenY + static_cast<int>(static_cast<float>(endScreenY - startScreenY) * t);
 
-                m_screenBuffer->SetPixel(lx, ly, 0xFFFFFF00);
+                m_screenBuffer->SetPixel(lx, ly, Color::Cyan());
             }
         }
     }
@@ -318,13 +319,13 @@ void App::Draw3DWalls()
             if (drawStart < 0) drawStart = 0;
             if (drawEnd >= SCREEN_HEIGHT) drawEnd = SCREEN_HEIGHT - 1;
 
-            uint32_t wallColor = (side == 0) ? 0xFFFFFFFF : 0xFFCCCCCC;
+            Color wallColor = (side == 0) ? Color::White() : Color::Gray();
 
             for (int y = 0; y < SCREEN_HEIGHT; ++y)
             {
                 if (y < drawStart)
                 {
-                    m_screenBuffer->SetPixel(x, y, 0xFF222233);
+                    m_screenBuffer->SetPixel(x, y, Color::Blue());
                 }
                 else if (y >= drawStart && y <= drawEnd)
                 {
@@ -332,7 +333,7 @@ void App::Draw3DWalls()
                 }
                 else
                 {
-                    m_screenBuffer->SetPixel(x, y, 0xFF111111);
+                    m_screenBuffer->SetPixel(x, y, Color::Green());
                 }
             }
         }
