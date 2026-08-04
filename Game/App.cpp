@@ -1,10 +1,13 @@
+#define NOMINMAX
 #include "App.h"
 #include "Color.h"
+#include <algorithm>
 
 App::App()
     : m_wnd(800, 600, L"My Custom Game Framework", L"../../GameFramework/Framework/Shader/BufferShaders.hlsl")
 {
     m_screenBuffer = std::make_unique<ScreenBuffer>(800, 600);
+    m_wallTexture.LoadBMP("Assets/Test1.bmp");
 }
 
 int App::Run()
@@ -88,7 +91,8 @@ void App::Render()
     Draw2DRays();
     Draw2DPlayer();
 
-    Draw3DWalls();
+    //Draw3DWalls();
+    Draw3DTexWalls();
 
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
     m_wnd.Gfx().PresentBuffer(*m_screenBuffer);
@@ -330,6 +334,123 @@ void App::Draw3DWalls()
                 else if (y >= drawStart && y <= drawEnd)
                 {
                     m_screenBuffer->SetPixel(x, y, wallColor);
+                }
+                else
+                {
+                    m_screenBuffer->SetPixel(x, y, Color::Green());
+                }
+            }
+        }
+    }
+}
+
+void App::Draw3DTexWalls()
+{
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
+
+    for (int x = 0; x < SCREEN_WIDTH; ++x)
+    {
+        float cameraX = 2.0f * static_cast<float>(x) / static_cast<float>(SCREEN_WIDTH) - 1.0f;
+
+        float rayDirX = m_dirX + m_planeX * cameraX;
+        float rayDirY = m_dirY + m_planeY * cameraX;
+
+        int mapX = static_cast<int>(m_playerX);
+        int mapY = static_cast<int>(m_playerY);
+
+        float deltaDistX = (rayDirX == 0) ? 1e30f : std::abs(1.0f / rayDirX);
+        float deltaDistY = (rayDirY == 0) ? 1e30f : std::abs(1.0f / rayDirY);
+
+        float sideDistX;
+        float sideDistY;
+        int stepX;
+        int stepY;
+
+        if (rayDirX < 0)
+        {
+            stepX = -1;
+            sideDistX = (m_playerX - static_cast<float>(mapX)) * deltaDistX;
+        }
+        else
+        {
+            stepX = 1;
+            sideDistX = (static_cast<float>(mapX + 1) - m_playerX) * deltaDistX;
+        }
+
+        if (rayDirY < 0)
+        {
+            stepY = -1;
+            sideDistY = (m_playerY - static_cast<float>(mapY)) * deltaDistY;
+        }
+        else
+        {
+            stepY = 1;
+            sideDistY = (static_cast<float>(mapY + 1) - m_playerY) * deltaDistY;
+        }
+
+        bool hit = false;
+        int side = 0;
+        while (!hit)
+        {
+            if (sideDistX < sideDistY)
+            {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            }
+            else
+            {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+
+            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
+            if (m_map[mapY][mapX] > 0) hit = true;
+        }
+
+        if (hit)
+        {
+            float perpWallDist;
+            if (side == 0) perpWallDist = (sideDistX - deltaDistX);
+            else           perpWallDist = (sideDistY - deltaDistY);
+
+            int lineHeight = static_cast<int>(640.0f / perpWallDist);
+
+            float hitCoord;
+            if (side == 0) hitCoord = m_playerY + perpWallDist * rayDirY;
+            else           hitCoord = m_playerX + perpWallDist * rayDirX;
+            float wallU = hitCoord - std::floor(hitCoord);
+
+            int texX = static_cast<int>(wallU * m_wallTexture.GetWidth());
+            if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0)) texX = m_wallTexture.GetWidth() - texX - 1;
+            texX = std::clamp(texX, 0, m_wallTexture.GetWidth() - 1);
+
+            int rawDrawStart = (SCREEN_HEIGHT - lineHeight) / 2;
+            int rawDrawEnd = (SCREEN_HEIGHT + lineHeight) / 2;
+
+            int drawStart = std::max(0, rawDrawStart);
+            int drawEnd = std::min(SCREEN_HEIGHT - 1, rawDrawEnd);
+
+            float texStep = static_cast<float>(m_wallTexture.GetHeight()) / static_cast<float>(lineHeight);
+            float texPos = static_cast<float>(drawStart - rawDrawStart) * texStep;
+
+            for (int y = 0; y < SCREEN_HEIGHT; ++y)
+            {
+                if (y < drawStart)
+                {
+                    m_screenBuffer->SetPixel(x, y, Color::Blue());
+                }
+                else if (y <= drawEnd)
+                {
+                    int texY = static_cast<int>(texPos);
+                    texPos += texStep;
+                    texY = std::clamp(texY, 0, m_wallTexture.GetHeight() - 1);
+
+                    Color color = m_wallTexture.GetPixel(texX, texY);
+
+                    m_screenBuffer->SetPixel(x, y, color);
                 }
                 else
                 {

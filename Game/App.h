@@ -4,6 +4,7 @@
 #include "ScreenBuffer.h"
 #include <memory>
 #include <cmath>
+#include "Image.h"
 
 class App
 {
@@ -27,6 +28,7 @@ private:
     void Draw2DPlayer();
     void Draw2DRays();
     void Draw3DWalls();
+    void Draw3DTexWalls();
 
     bool IsWall(float x, float y) const;
     bool CanMove(float x, float y) const;
@@ -66,5 +68,7 @@ private:
     static constexpr float MOVE_SPEED = 2.0f;
     static constexpr float ROT_SPEED = 1.5f;
     static constexpr float PLAYER_RADIUS = 0.25f;
+
+    Image m_wallTexture;
 
 };
