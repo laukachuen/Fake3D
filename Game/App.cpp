@@ -23,7 +23,7 @@ App::App()
     for (const auto& path : texturePaths)
     {
         m_wallTextures.emplace_back();
-        m_wallTextures.front().LoadBMP(path);
+        m_wallTextures.back().LoadBMP(path);
     }
 }
 
