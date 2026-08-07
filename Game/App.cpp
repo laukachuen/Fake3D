@@ -2,22 +2,37 @@
 #include "App.h"
 #include "Color.h"
 #include <algorithm>
+#include <string>
 
 App::App()
     : m_wnd(800, 600, L"My Custom Game Framework", L"../../GameFramework/Framework/Shader/BufferShaders.hlsl")
 {
     m_screenBuffer = std::make_unique<ScreenBuffer>(800, 600);
-    m_wallTexture.LoadBMP("Assets/Test1.bmp");
+
+    std::vector<std::string> texturePaths =
+    {
+        "Assets/Test1.bmp",
+        "Assets/Test2.bmp",
+        "Assets/Test3.bmp",
+        "Assets/Test4.bmp",
+        "Assets/Test5.bmp"
+    };
+
+    m_wallTextures.reserve(texturePaths.size());
+
+    for (const auto& path : texturePaths)
+    {
+        m_wallTextures.emplace_back();
+        m_wallTextures.front().LoadBMP(path);
+    }
 }
 
 int App::Run()
 {
     while (true)
     {
-        // 1. Process all Windows OS messages first
         if (!m_wnd.ProcessMessages())
         {
-            // If WM_QUIT is received, exit the loop with standard exit code
             return 0;
         }
         DoFrame();
@@ -391,6 +406,8 @@ void App::Draw3DTexWalls()
 
         bool hit = false;
         int side = 0;
+        int wallType = 0;
+
         while (!hit)
         {
             if (sideDistX < sideDistY)
@@ -407,11 +424,18 @@ void App::Draw3DTexWalls()
             }
 
             if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
-            if (m_map[mapY][mapX] > 0) hit = true;
+            if (m_map[mapY][mapX] > 0)
+            {
+                hit = true;
+                wallType = m_map[mapY][mapX];
+            }
         }
 
         if (hit)
         {
+            int texIndex = std::clamp(wallType - 1, 0, static_cast<int>(m_wallTextures.size()) - 1);
+            const Image& currentTex = m_wallTextures[texIndex];
+
             float perpWallDist;
             if (side == 0) perpWallDist = (sideDistX - deltaDistX);
             else           perpWallDist = (sideDistY - deltaDistY);
@@ -423,9 +447,9 @@ void App::Draw3DTexWalls()
             else           hitCoord = m_playerX + perpWallDist * rayDirX;
             float wallU = hitCoord - std::floor(hitCoord);
 
-            int texX = static_cast<int>(wallU * m_wallTexture.GetWidth());
-            if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0)) texX = m_wallTexture.GetWidth() - texX - 1;
-            texX = std::clamp(texX, 0, m_wallTexture.GetWidth() - 1);
+            int texX = static_cast<int>(wallU * currentTex.GetWidth());
+            if ((side == 0 && rayDirX > 0) || (side == 1 && rayDirY < 0)) texX = currentTex.GetWidth() - texX - 1;
+            texX = std::clamp(texX, 0, currentTex.GetWidth() - 1);
 
             int rawDrawStart = (SCREEN_HEIGHT - lineHeight) / 2;
             int rawDrawEnd = (SCREEN_HEIGHT + lineHeight) / 2;
@@ -433,7 +457,7 @@ void App::Draw3DTexWalls()
             int drawStart = std::max(0, rawDrawStart);
             int drawEnd = std::min(SCREEN_HEIGHT - 1, rawDrawEnd);
 
-            float texStep = static_cast<float>(m_wallTexture.GetHeight()) / static_cast<float>(lineHeight);
+            float texStep = static_cast<float>(currentTex.GetHeight()) / static_cast<float>(lineHeight);
             float texPos = static_cast<float>(drawStart - rawDrawStart) * texStep;
 
             for (int y = 0; y < SCREEN_HEIGHT; ++y)
@@ -446,9 +470,9 @@ void App::Draw3DTexWalls()
                 {
                     int texY = static_cast<int>(texPos);
                     texPos += texStep;
-                    texY = std::clamp(texY, 0, m_wallTexture.GetHeight() - 1);
+                    texY = std::clamp(texY, 0, currentTex.GetHeight() - 1);
 
-                    Color color = m_wallTexture.GetPixel(texX, texY);
+                    Color color = currentTex.GetPixel(texX, texY);
 
                     m_screenBuffer->SetPixel(x, y, color);
                 }

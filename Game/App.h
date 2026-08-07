@@ -5,6 +5,7 @@
 #include <memory>
 #include <cmath>
 #include "Image.h"
+#include <vector>
 
 class App
 {
@@ -12,11 +13,9 @@ public:
     App();
     ~App() = default;
 
-    // Prevent copying
     App(const App&) = delete;
     App& operator=(const App&) = delete;
 
-    // The actual infinite loop that runs the game
     int Run();
 
 private:
@@ -43,12 +42,12 @@ private:
     static constexpr int MAP_HEIGHT = 8;
     const int m_map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1},
+        {1,0,0,0,0,3,0,1},
+        {1,2,2,0,0,3,0,1},
         {1,0,0,0,0,0,0,1},
-        {1,0,1,0,0,1,0,1},
         {1,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,1},
-        {1,0,1,0,0,1,0,1},
-        {1,0,0,0,0,0,0,1},
+        {1,0,4,0,0,5,5,1},
+        {1,0,4,0,0,0,0,1},
         {1,1,1,1,1,1,1,1}
     };
 
@@ -69,6 +68,6 @@ private:
     static constexpr float ROT_SPEED = 1.5f;
     static constexpr float PLAYER_RADIUS = 0.25f;
 
-    Image m_wallTexture;
+    std::vector<Image> m_wallTextures;
 
 };
