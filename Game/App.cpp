@@ -25,6 +25,9 @@ App::App()
         m_wallTextures.emplace_back();
         m_wallTextures.back().LoadBMP(path);
     }
+    
+    m_floorTexture.LoadBMP("Assets/Test.bmp");
+    m_ceilingTexture.LoadBMP("Assets/Test.bmp");
 }
 
 int App::Run()
@@ -102,11 +105,12 @@ void App::Render()
 {
     m_screenBuffer->Clear(Color::Black());
 
-    Draw2DMap();
-    Draw2DRays();
-    Draw2DPlayer();
+    //Draw2DMap();
+    //Draw2DRays();
+    //Draw2DPlayer();
 
     //Draw3DWalls();
+    Draw3DFloorAndCeiling();
     Draw3DTexWalls();
 
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
@@ -460,27 +464,70 @@ void App::Draw3DTexWalls()
             float texStep = static_cast<float>(currentTex.GetHeight()) / static_cast<float>(lineHeight);
             float texPos = static_cast<float>(drawStart - rawDrawStart) * texStep;
 
-            for (int y = 0; y < SCREEN_HEIGHT; ++y)
+            for (int y = drawStart; y < drawEnd; ++y)
             {
-                if (y < drawStart)
-                {
-                    m_screenBuffer->SetPixel(x, y, Color::Blue());
-                }
-                else if (y <= drawEnd)
-                {
-                    int texY = static_cast<int>(texPos);
-                    texPos += texStep;
-                    texY = std::clamp(texY, 0, currentTex.GetHeight() - 1);
+                int texY = static_cast<int>(texPos);
+                texPos += texStep;
+                texY = std::clamp(texY, 0, currentTex.GetHeight() - 1);
 
-                    Color color = currentTex.GetPixel(texX, texY);
+                Color color = currentTex.GetPixel(texX, texY);
 
-                    m_screenBuffer->SetPixel(x, y, color);
-                }
-                else
-                {
-                    m_screenBuffer->SetPixel(x, y, Color::Green());
-                }
+                m_screenBuffer->SetPixel(x, y, color);
             }
+        }
+    }
+}
+
+void App::Draw3DFloorAndCeiling()
+{
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
+
+    const Image& floorTex = m_floorTexture;
+    const Image& ceilingTex = m_floorTexture;
+
+    int texWidth = floorTex.GetWidth();
+    int texHeight = floorTex.GetHeight();
+
+    for (int y = SCREEN_HEIGHT / 2 + 1; y < SCREEN_HEIGHT; ++y)
+    {
+        int p = y - SCREEN_HEIGHT / 2;
+        float posZ = 0.5f * static_cast<float>(SCREEN_HEIGHT);
+        float rowDistance = posZ / static_cast<float>(p);
+
+        float floorX0 = m_playerX + rowDistance * (m_dirX - m_planeX);
+        float floorY0 = m_playerY + rowDistance * (m_dirY - m_planeY);
+        float floorX1 = m_playerX + rowDistance * (m_dirX + m_planeX);
+        float floorY1 = m_playerY + rowDistance * (m_dirY + m_planeY);
+
+        float floorStepX = (floorX1 - floorX0) / static_cast<float>(SCREEN_WIDTH);
+        float floorStepY = (floorY1 - floorY0) / static_cast<float>(SCREEN_WIDTH);
+
+        float floorX = floorX0;
+        float floorY = floorY0;
+
+        for (int x = 0; x < SCREEN_WIDTH; ++x)
+        {
+            int cellX = static_cast<int>(floorX);
+            int cellY = static_cast<int>(floorY);
+
+            float u = floorX - std::floor(floorX);
+            float v = floorY - std::floor(floorY);
+
+            int tx = static_cast<int>(u * texWidth);
+            int ty = static_cast<int>(v * texHeight);
+
+            tx = std::clamp(tx, 0, texWidth - 1);
+            ty = std::clamp(ty, 0, texHeight - 1);
+
+            floorX += floorStepX;
+            floorY += floorStepY;
+
+            Color floorColor = floorTex.GetPixel(tx, ty);
+            Color ceilingColor = ceilingTex.GetPixel(tx, ty);
+
+            m_screenBuffer->SetPixel(x, y, floorColor);
+            m_screenBuffer->SetPixel(x, SCREEN_HEIGHT - y - 1, ceilingColor);
         }
     }
 }

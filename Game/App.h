@@ -28,6 +28,8 @@ private:
     void Draw2DRays();
     void Draw3DWalls();
     void Draw3DTexWalls();
+    void Draw3DFloorAndCeiling();
+    
 
     bool IsWall(float x, float y) const;
     bool CanMove(float x, float y) const;
@@ -38,25 +40,35 @@ private:
     std::unique_ptr<ScreenBuffer> m_screenBuffer;
 
     // MAP
-    static constexpr int MAP_WIDTH = 8;
-    static constexpr int MAP_HEIGHT = 8;
+    static constexpr int MAP_WIDTH = 17;
+    static constexpr int MAP_HEIGHT = 17;
     const int m_map[MAP_HEIGHT][MAP_WIDTH] = {
-        {1,1,1,1,1,1,1,1},
-        {1,0,0,0,0,3,0,1},
-        {1,2,2,0,0,3,0,1},
-        {1,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,1},
-        {1,0,4,0,0,5,5,1},
-        {1,0,4,0,0,0,0,1},
-        {1,1,1,1,1,1,1,1}
+        {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,1},
+        {1,0,2,2,2,2,2,0,0,0,0,0,0,3,0,0,1},
+        {1,0,2,0,0,0,2,0,0,0,0,0,0,3,0,0,1},
+        {1,0,2,2,0,2,2,0,0,0,0,0,0,3,0,0,1},
+        {1,0,0,2,0,2,0,0,0,0,0,0,0,3,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,5,0,5,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,5,0,5,0,0,0,1},
+        {1,0,0,0,0,0,4,0,0,0,5,0,5,5,5,0,1},
+        {1,0,0,0,0,0,4,0,0,0,5,0,0,0,5,0,1},
+        {1,0,4,4,4,4,4,0,0,0,5,5,5,0,5,0,1},
+        {1,0,4,0,0,0,0,0,0,0,0,0,5,0,5,0,1},
+        {1,0,4,0,0,0,0,0,0,0,0,0,5,0,5,0,1},
+        {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+
     };
 
     static constexpr int TILE_SIZE = 64;
     static constexpr int TILE_GAP = 1;
 
     // PLAYER
-    float m_playerX = 3.5f;
-    float m_playerY = 3.5f;
+    float m_playerX = MAP_WIDTH / 2;
+    float m_playerY = MAP_HEIGHT / 2;
 
     float m_dirX = 1.0f;
     float m_dirY = 0.0f;
@@ -64,10 +76,12 @@ private:
     float m_planeX = 0.0f;
     float m_planeY = 0.66f;
 
-    static constexpr float MOVE_SPEED = 2.0f;
-    static constexpr float ROT_SPEED = 1.5f;
+    static constexpr float MOVE_SPEED = 2.5f;
+    static constexpr float ROT_SPEED = 2.0f;
     static constexpr float PLAYER_RADIUS = 0.25f;
 
     std::vector<Image> m_wallTextures;
+    Image m_floorTexture;
+    Image m_ceilingTexture;
 
 };
