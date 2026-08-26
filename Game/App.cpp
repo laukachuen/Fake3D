@@ -9,7 +9,8 @@ App::App()
 {
     m_screenBuffer = std::make_unique<ScreenBuffer>(800, 600);
 
-    std::vector<std::string> texturePaths =
+    // Wall Textures
+    std::vector<std::string> wallTexturePaths =
     {
         "Assets/Test1.bmp",
         "Assets/Test2.bmp",
@@ -18,16 +19,45 @@ App::App()
         "Assets/Test5.bmp"
     };
 
-    m_wallTextures.reserve(texturePaths.size());
+    m_wallTextures.reserve(wallTexturePaths.size());
 
-    for (const auto& path : texturePaths)
+    for (const auto& path : wallTexturePaths)
     {
         m_wallTextures.emplace_back();
         m_wallTextures.back().LoadBMP(path);
     }
     
+    // Floor Texture
     m_floorTexture.LoadBMP("Assets/Test.bmp");
+
+    // Ceiling Texture
     m_ceilingTexture.LoadBMP("Assets/Test.bmp");
+
+    // Sprite Textures
+    std::vector<std::string> spriteTexturesPaths =
+    {
+        "Assets/Sprite_01.bmp",
+        "Assets/Sprite_02.bmp",
+        "Assets/Sprite_03.bmp"
+    };
+
+    m_spriteTextures.reserve(spriteTexturesPaths.size());
+
+    for (const auto& path : spriteTexturesPaths)
+    {
+        m_spriteTextures.emplace_back();
+        m_spriteTextures.back().LoadBMP(path);
+    }
+
+    // Sprite 
+    m_sprites =
+    {
+        {2.5f, 2.5f, 0},
+        {4.5f, 2.5f, 1},
+        {5.5f, 4.5f, 2}
+    };
+
+    m_zBuffer.resize(800, 0.0f);
 }
 
 int App::Run()
@@ -112,6 +142,7 @@ void App::Render()
     //Draw3DWalls();
     Draw3DFloorAndCeiling();
     Draw3DTexWalls();
+    DrawSprites();
 
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
     m_wnd.Gfx().PresentBuffer(*m_screenBuffer);
@@ -445,6 +476,7 @@ void App::Draw3DTexWalls()
             else           perpWallDist = (sideDistY - deltaDistY);
 
             int lineHeight = static_cast<int>(640.0f / perpWallDist);
+            m_zBuffer[x] = perpWallDist;
 
             float hitCoord;
             if (side == 0) hitCoord = m_playerY + perpWallDist * rayDirY;
@@ -528,6 +560,86 @@ void App::Draw3DFloorAndCeiling()
 
             m_screenBuffer->SetPixel(x, y, floorColor);
             m_screenBuffer->SetPixel(x, SCREEN_HEIGHT - y - 1, ceilingColor);
+        }
+    }
+}
+
+void App::DrawSprites()
+{
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
+
+    std::vector<int> spriteOrder(m_sprites.size());
+    std::vector<float> spriteDistance(m_sprites.size());
+
+    for (size_t i = 0; i < m_sprites.size(); ++i)
+    {
+        spriteOrder[i] = static_cast<int>(i);
+        spriteDistance[i] = (
+            (m_playerX - m_sprites[i].x) * (m_playerX - m_sprites[i].x) + 
+            (m_playerY - m_sprites[i].y) * (m_playerY - m_sprites[i].y)
+            );
+    }
+
+    std::sort(
+        spriteOrder.begin(), 
+        spriteOrder.end(), 
+        [&spriteDistance](int a, int b)
+        {
+            return spriteDistance[a] > spriteDistance[b];
+        }
+    );
+
+    for (size_t i = 0; i < m_sprites.size(); ++i)
+    {
+        const Sprite& sprite = m_sprites[spriteOrder[i]];
+
+        float spriteX = sprite.x - m_playerX;
+        float spriteY = sprite.y - m_playerY;
+
+        float invDet = 1.0f / (m_planeX * m_dirY - m_dirX * m_planeY);
+        float transformX = invDet * (m_dirY * spriteX - m_dirX * spriteY);
+        float transformY = invDet * (-m_planeY * spriteX + m_planeX * spriteY); 
+
+        if (transformY <= 0.1f) continue;
+
+        int spriteScreenX = static_cast<int>((SCREEN_WIDTH / 2) * (1.0f + transformX / transformY));
+        int spriteHeight = std::abs(static_cast<int>(SCREEN_HEIGHT / transformY));
+        int spriteWidth = spriteHeight; 
+
+        int drawStartY = -spriteHeight / 2 + SCREEN_HEIGHT / 2;
+        int drawEndY = spriteHeight / 2 + SCREEN_HEIGHT / 2;
+        int drawStartX = -spriteWidth / 2 + spriteScreenX;
+        int drawEndX = spriteWidth / 2 + spriteScreenX;
+
+        int clampDrawStartY = std::max(0, drawStartY);
+        int clampDrawEndY = std::min(SCREEN_HEIGHT - 1, drawEndY);
+        int clampDrawStartX = std::max(0, drawStartX);
+        int clampDrawEndX = std::min(SCREEN_WIDTH - 1, drawEndX);
+
+        int texIndex = std::clamp(sprite.textureID, 0, static_cast<int>(m_spriteTextures.size()) - 1);
+        const Image& tex = m_spriteTextures[texIndex];
+
+     
+        for (int stripe = clampDrawStartX; stripe < clampDrawEndX; ++stripe)
+        {
+            int rawTexX = static_cast<int>((stripe - drawStartX) * tex.GetWidth() / spriteWidth);
+            int texX = std::clamp(rawTexX, 0, tex.GetWidth() - 1);
+
+            if (stripe >= 0 && stripe < static_cast<int>(m_zBuffer.size()) && transformY < m_zBuffer[stripe])
+            {
+                for (int y = clampDrawStartY; y < clampDrawEndY; ++y)
+                {
+                    int rawTexY = (y - drawStartY) * tex.GetHeight() / spriteHeight;
+                    int texY = std::clamp(rawTexY, 0, tex.GetHeight() - 1);
+
+                    Color color = tex.GetPixel(texX, texY);
+
+                    //if (color == Color(255, 0, 255)) continue;
+
+                    m_screenBuffer->SetPixel(stripe, y, color);
+                }
+            }
         }
     }
 }
