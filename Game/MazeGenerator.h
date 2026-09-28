@@ -1,0 +1,29 @@
+#pragma once
+
+#include <vector>
+#include <stack>
+#include <random>
+
+class MazeGenereator
+{
+public:
+	MazeGenereator();
+	void Generate(int width, int height);
+
+	const std::vector<std::vector<int>>& GetMap() const;
+	int GetWidth() const;
+	int GetHeight() const;
+
+private:
+	int m_width;
+	int m_height;
+	std::vector<std::vector<int>> m_map;
+
+	std::mt19937 m_rng;
+
+	struct Point
+	{
+		int x;
+		int y;
+	};
+};

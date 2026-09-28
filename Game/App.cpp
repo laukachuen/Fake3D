@@ -9,10 +9,13 @@ App::App()
 {
     m_screenBuffer = std::make_unique<ScreenBuffer>(800, 600);
 
+    // Map Generation
+    m_mazeGenerator.Generate(17, 17);
+
     // Wall Textures
     std::vector<std::string> wallTexturePaths =
     {
-        "Assets/Test1.bmp",
+        "Assets/Test6.bmp",
         "Assets/Test2.bmp",
         "Assets/Test3.bmp",
         "Assets/Test4.bmp",
@@ -135,14 +138,14 @@ void App::Render()
 {
     m_screenBuffer->Clear(Color::Black());
 
-    //Draw2DMap();
+    Draw2DMap();
     //Draw2DRays();
     //Draw2DPlayer();
 
     //Draw3DWalls();
-    Draw3DFloorAndCeiling();
-    Draw3DTexWalls();
-    DrawSprites();
+    //Draw3DFloorAndCeiling();
+    //Draw3DTexWalls();
+    //DrawSprites();
 
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
     m_wnd.Gfx().PresentBuffer(*m_screenBuffer);
@@ -151,11 +154,15 @@ void App::Render()
 
 void App::Draw2DMap()
 {
-    for (int y = 0; y < MAP_HEIGHT; ++y)
+    const auto& map = m_mazeGenerator.GetMap();
+    int mapWidth = m_mazeGenerator.GetWidth();
+    int mapHeight = m_mazeGenerator.GetHeight();
+
+    for (int y = 0; y < mapHeight; ++y)
     {
-        for (int x = 0; x < MAP_WIDTH; ++x)
+        for (int x = 0; x < mapWidth; ++x)
         {
-            if (m_map[y][x] == 1)
+            if (map[y][x] == 1)
             {
                 int startX = x * TILE_SIZE;
                 int startY = y * TILE_SIZE;

@@ -6,6 +6,7 @@
 #include <cmath>
 #include "Image.h"
 #include <vector>
+#include "MazeGenerator.h"
 
 struct Sprite
 {
@@ -73,8 +74,10 @@ private:
 
     };
 
-    static constexpr int TILE_SIZE = 64;
+    static constexpr int TILE_SIZE = 32;
     static constexpr int TILE_GAP = 1;
+
+    MazeGenereator m_mazeGenerator;
 
     // PLAYER
     float m_playerX = MAP_WIDTH / 2;
