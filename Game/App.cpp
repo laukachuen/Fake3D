@@ -138,14 +138,14 @@ void App::Render()
 {
     m_screenBuffer->Clear(Color::Black());
 
-    Draw2DMap();
+    //Draw3DWalls();
+    Draw3DFloorAndCeiling();
+    Draw3DTexWalls();
+    DrawSprites();
+
+    //Draw2DMap();
     //Draw2DRays();
     //Draw2DPlayer();
-
-    //Draw3DWalls();
-    //Draw3DFloorAndCeiling();
-    //Draw3DTexWalls();
-    //DrawSprites();
 
     m_wnd.Gfx().BeginFrame(0.0f, 0.0f, 1.0f);
     m_wnd.Gfx().PresentBuffer(*m_screenBuffer);
@@ -207,6 +207,10 @@ void App::Draw2DRays()
 {
     const int NUM_RAYS = 60; 
 
+    const auto& map = m_mazeGenerator.GetMap();
+    int mapWidth = m_mazeGenerator.GetWidth();
+    int mapHeight = m_mazeGenerator.GetHeight();
+
     for (int i = 0; i < NUM_RAYS; ++i)
     {
         float cameraX = 2.0f * static_cast<float>(i) / static_cast<float>(NUM_RAYS) - 1.0f;
@@ -266,12 +270,12 @@ void App::Draw2DRays()
                 side = 1;
             }
 
-            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT)
+            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight)
             {
                 break;
             }
 
-            if (m_map[mapY][mapX] > 0)
+            if (map[mapY][mapX] > 0)
             {
                 hit = true;
             }
@@ -304,6 +308,10 @@ void App::Draw3DWalls()
 {
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
+
+    const auto& map = m_mazeGenerator.GetMap();
+    int mapWidth = m_mazeGenerator.GetWidth();
+    int mapHeight = m_mazeGenerator.GetHeight();
 
     for (int x = 0; x < SCREEN_WIDTH; ++x)
     {
@@ -362,8 +370,8 @@ void App::Draw3DWalls()
                 side = 1;
             }
 
-            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
-            if (m_map[mapY][mapX] > 0) hit = true;
+            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight) break;
+            if (map[mapY][mapX] > 0) hit = true;
         }
 
         if (hit)
@@ -405,6 +413,10 @@ void App::Draw3DTexWalls()
 {
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 600;
+
+    const auto& map = m_mazeGenerator.GetMap();
+    int mapWidth = m_mazeGenerator.GetWidth();
+    int mapHeight = m_mazeGenerator.GetHeight();
 
     for (int x = 0; x < SCREEN_WIDTH; ++x)
     {
@@ -465,11 +477,11 @@ void App::Draw3DTexWalls()
                 side = 1;
             }
 
-            if (mapX < 0 || mapX >= MAP_WIDTH || mapY < 0 || mapY >= MAP_HEIGHT) break;
-            if (m_map[mapY][mapX] > 0)
+            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight) break;
+            if (map[mapY][mapX] > 0)
             {
                 hit = true;
-                wallType = m_map[mapY][mapX];
+                wallType = map[mapY][mapX];
             }
         }
 
@@ -656,12 +668,12 @@ bool App::IsWall(float x, float y) const
     int mapX = static_cast<int>(x);
     int mapY = static_cast<int>(y);
 
-    if (mapX < 0 || mapX >= MAP_WIDTH ||
-        mapY < 0 || mapY >= MAP_HEIGHT)
+    if (mapX < 0 || mapX >= m_mazeGenerator.GetWidth() ||
+        mapY < 0 || mapY >= m_mazeGenerator.GetHeight())
     {
         return true;
     }
-    return m_map[mapY][mapX] != 0;
+    return m_mazeGenerator.GetMap()[mapY][mapX] != 0;
 }
 
 bool App::CanMove(float x, float y) const

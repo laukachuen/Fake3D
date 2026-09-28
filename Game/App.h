@@ -51,7 +51,7 @@ private:
     std::unique_ptr<ScreenBuffer> m_screenBuffer;
 
     // MAP
-    static constexpr int MAP_WIDTH = 17;
+    /*static constexpr int MAP_WIDTH = 17;
     static constexpr int MAP_HEIGHT = 17;
     const int m_map[MAP_HEIGHT][MAP_WIDTH] = {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -72,7 +72,7 @@ private:
         {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 
-    };
+    };*/
 
     static constexpr int TILE_SIZE = 32;
     static constexpr int TILE_GAP = 1;
@@ -80,8 +80,8 @@ private:
     MazeGenereator m_mazeGenerator;
 
     // PLAYER
-    float m_playerX = MAP_WIDTH / 2;
-    float m_playerY = MAP_HEIGHT / 2;
+    float m_playerX = 1.5f;
+    float m_playerY = 1.5f;
 
     float m_dirX = 1.0f;
     float m_dirY = 0.0f;
