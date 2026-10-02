@@ -1,5 +1,6 @@
 #define NOMINMAX
 #include "GameplayState.h"
+#include "TitleState.h"
 #include "Color.h"
 
 #include "Keyboard.h"
@@ -122,18 +123,25 @@ void GameplayState::Update(float dt)
     {
         m_playerY = newY;
     }
+
+    if (m_context.kbd.IsKeyPressed(VK_ESCAPE))
+    {
+        m_context.gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_context));
+    }
 }
 
 void GameplayState::Draw()
 {
-    //Draw3DWalls();
-    Draw3DFloorAndCeiling();
-    Draw3DTexWalls();
-    DrawSprites();
+    m_context.gfx.GetScreenBuffer().Clear(Color::Black());
 
-    //Draw2DMap();
-    //Draw2DRays();
-    //Draw2DPlayer();
+    //Draw3DWalls();
+    //Draw3DFloorAndCeiling();
+    //Draw3DTexWalls();
+    //DrawSprites();
+
+    Draw2DMap();
+    Draw2DRays();
+    Draw2DPlayer();
 }
 
 void GameplayState::Finalize()
