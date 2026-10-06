@@ -1,5 +1,6 @@
 #include "TitleState.h"
 #include "GameplayState.h"
+#include "VictoryState.h"
 
 #include "Keyboard.h"
 #include "GameStateManager.h"
@@ -23,6 +24,10 @@ void TitleState::Update(float dt)
     if (m_context.kbd.IsKeyTriggered(VK_SPACE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<GameplayState>(m_context));
+    }
+    if (m_context.kbd.IsKeyTriggered(VK_ESCAPE))
+    {
+        m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
     }
 }
 

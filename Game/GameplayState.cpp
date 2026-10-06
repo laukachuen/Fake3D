@@ -1,6 +1,7 @@
 #define NOMINMAX
 #include "GameplayState.h"
 #include "TitleState.h"
+#include "VictoryState.h"
 #include "Color.h"
 
 #include "Keyboard.h"
@@ -127,6 +128,10 @@ void GameplayState::Update(float dt)
     if (m_context.kbd.IsKeyTriggered(VK_ESCAPE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_context));
+    }
+    if (m_context.kbd.IsKeyTriggered(VK_SPACE))
+    {
+        m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
     }
 }
 
