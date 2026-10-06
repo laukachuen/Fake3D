@@ -32,6 +32,7 @@ void App::DoFrame()
 void App::Update(float dt)
 {
     m_gameStateMgr.Update(dt);
+    m_wnd.kbd.Update();
 }
 
 void App::Render()

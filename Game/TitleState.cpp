@@ -20,7 +20,7 @@ void TitleState::Initialize()
 
 void TitleState::Update(float dt)
 {
-    if (m_context.kbd.IsKeyPressed(VK_SPACE))
+    if (m_context.kbd.IsKeyTriggered(VK_SPACE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<GameplayState>(m_context));
     }

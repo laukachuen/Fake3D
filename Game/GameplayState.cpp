@@ -76,7 +76,7 @@ void GameplayState::Initialize()
 
 void GameplayState::Update(float dt)
 {
-    if (m_context.kbd.IsKeyPressed('A'))
+    if (m_context.kbd.IsKeyHeld('A'))
     {
         float oldDirX = m_dirX;
         m_dirX = m_dirX * std::cos(-ROT_SPEED * dt) - m_dirY * std::sin(-ROT_SPEED * dt);
@@ -86,7 +86,7 @@ void GameplayState::Update(float dt)
         m_planeX = m_planeX * std::cos(-ROT_SPEED * dt) - m_planeY * std::sin(-ROT_SPEED * dt);
         m_planeY = oldPlaneX * std::sin(-ROT_SPEED * dt) + m_planeY * std::cos(-ROT_SPEED * dt);
     }
-    if (m_context.kbd.IsKeyPressed('D'))
+    if (m_context.kbd.IsKeyHeld('D'))
     {
         float oldDirX = m_dirX;
         m_dirX = m_dirX * std::cos(ROT_SPEED * dt) - m_dirY * std::sin(ROT_SPEED * dt);
@@ -100,12 +100,12 @@ void GameplayState::Update(float dt)
     float moveX = 0.0f;
     float moveY = 0.0f;
 
-    if (m_context.kbd.IsKeyPressed('W'))
+    if (m_context.kbd.IsKeyHeld('W'))
     {
         moveX += m_dirX * MOVE_SPEED * dt;
         moveY += m_dirY * MOVE_SPEED * dt;
     }
-    if (m_context.kbd.IsKeyPressed('S'))
+    if (m_context.kbd.IsKeyHeld('S'))
     {
         moveX -= m_dirX * MOVE_SPEED * dt;
         moveY -= m_dirY * MOVE_SPEED * dt;
@@ -124,7 +124,7 @@ void GameplayState::Update(float dt)
         m_playerY = newY;
     }
 
-    if (m_context.kbd.IsKeyPressed(VK_ESCAPE))
+    if (m_context.kbd.IsKeyTriggered(VK_ESCAPE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_context));
     }
