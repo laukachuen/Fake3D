@@ -65,6 +65,8 @@ void MazeGenereator::Generate(int width, int height)
             pathStack.pop();
         }
     }
+
+    m_map[height - 2][width - 2] = TileType::Goal;
 }
 
 const std::vector<std::vector<TileType>>& MazeGenereator::GetMap() const

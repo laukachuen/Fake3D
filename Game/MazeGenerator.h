@@ -7,7 +7,8 @@
 enum class TileType
 {
 	Road = 0,
-	Wall = 1
+	Wall = 1,
+	Goal = 2
 };
 
 class MazeGenereator

@@ -22,7 +22,7 @@ GameplayState::~GameplayState() = default;
 void GameplayState::Initialize()
 {
     // Map Generation
-    m_mazeGenerator.Generate(17, 17);
+    m_mazeGenerator.Generate(7, 7);
 
     // Wall Textures
     std::vector<std::string> wallTexturePaths =
@@ -130,6 +130,11 @@ void GameplayState::Update(float dt)
         m_context.gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_context));
     }
     if (m_context.kbd.IsKeyTriggered(VK_SPACE))
+    {
+        m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
+    }
+
+    if (m_mazeGenerator.GetMap()[static_cast<int>(m_playerY)][static_cast<int>(m_playerX)] == TileType::Goal)
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
     }
