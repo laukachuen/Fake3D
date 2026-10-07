@@ -12,11 +12,11 @@ void MazeGenereator::Generate(int width, int height)
     m_height = (height % 2 == 0) ? height + 1 : height;
 
     m_map.clear();
-    m_map.resize(m_height, std::vector<int>(m_width, 1));
+    m_map.resize(m_height, std::vector<TileType>(m_width, TileType::Wall));
 
     int startX = 1;
     int startY = 1;
-    m_map[startY][startX] = 0;
+    m_map[startY][startX] = TileType::Road;
 
     const int dx[4] = { 0, 0, -2, 2 };
     const int dy[4] = { -2, 2, 0, 0 };
@@ -36,7 +36,7 @@ void MazeGenereator::Generate(int width, int height)
 
             if (nx > 0 && nx < m_width - 1 && ny > 0 && ny < m_height - 1) 
             {
-                if (m_map[ny][nx] == 1) 
+                if (m_map[ny][nx] == TileType::Wall)
                 {
                     validDirections.push_back(i);
                 }
@@ -55,8 +55,8 @@ void MazeGenereator::Generate(int width, int height)
             int wallX = current.x + dx[dirIndex] / 2;
             int wallY = current.y + dy[dirIndex] / 2;
 
-            m_map[wallY][wallX] = 0;
-            m_map[nextY][nextX] = 0;
+            m_map[wallY][wallX] = TileType::Road;
+            m_map[nextY][nextX] = TileType::Road;
 
             pathStack.push({ nextX, nextY });
         }
@@ -67,7 +67,7 @@ void MazeGenereator::Generate(int width, int height)
     }
 }
 
-const std::vector<std::vector<int>>& MazeGenereator::GetMap() const
+const std::vector<std::vector<TileType>>& MazeGenereator::GetMap() const
 {
 	return m_map;
 }

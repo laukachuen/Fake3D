@@ -164,7 +164,7 @@ void GameplayState::Draw2DMap()
     {
         for (int x = 0; x < mapWidth; ++x)
         {
-            if (map[y][x] == 1)
+            if (map[y][x] == TileType::Wall)
             {
                 int startX = x * TILE_SIZE;
                 int startY = y * TILE_SIZE;
@@ -277,7 +277,7 @@ void GameplayState::Draw2DRays()
                 break;
             }
 
-            if (map[mapY][mapX] > 0)
+            if (map[mapY][mapX] == TileType::Wall)
             {
                 hit = true;
             }
@@ -372,8 +372,15 @@ void GameplayState::Draw3DWalls()
                 side = 1;
             }
 
-            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight) break;
-            if (map[mapY][mapX] > 0) hit = true;
+            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight)
+            {
+                break;
+            }
+
+            if (map[mapY][mapX] == TileType::Wall)
+            {
+                hit = true;
+            }
         }
 
         if (hit)
@@ -462,7 +469,7 @@ void GameplayState::Draw3DTexWalls()
 
         bool hit = false;
         int side = 0;
-        int wallType = 0;
+        TileType wallType = TileType::Road;
 
         while (!hit)
         {
@@ -479,8 +486,11 @@ void GameplayState::Draw3DTexWalls()
                 side = 1;
             }
 
-            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight) break;
-            if (map[mapY][mapX] > 0)
+            if (mapX < 0 || mapX >= mapWidth || mapY < 0 || mapY >= mapHeight)
+            {
+                break;
+            }
+            if (map[mapY][mapX] == TileType::Wall)
             {
                 hit = true;
                 wallType = map[mapY][mapX];
@@ -489,7 +499,7 @@ void GameplayState::Draw3DTexWalls()
 
         if (hit)
         {
-            int texIndex = std::clamp(wallType - 1, 0, static_cast<int>(m_wallTextures.size()) - 1);
+            int texIndex = std::clamp(static_cast<int>(wallType) - 1, 0, static_cast<int>(m_wallTextures.size()) - 1);
             const Image& currentTex = m_wallTextures[texIndex];
 
             float perpWallDist;
@@ -675,7 +685,7 @@ bool GameplayState::IsWall(float x, float y) const
     {
         return true;
     }
-    return m_mazeGenerator.GetMap()[mapY][mapX] != 0;
+    return m_mazeGenerator.GetMap()[mapY][mapX] == TileType::Wall;
 }
 
 bool GameplayState::CanMove(float x, float y) const
