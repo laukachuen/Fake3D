@@ -7,6 +7,9 @@ class Keyboard;
 class GameStateManager;
 class Graphics;
 
+class Text;
+class FreeTypeFont;
+
 class TitleState : public GameState
 {
 public:
@@ -21,4 +24,6 @@ public:
 private:
     Image m_test;
 
+    std::unique_ptr<FreeTypeFont> m_font;
+    std::unique_ptr<Text> m_text;
 };

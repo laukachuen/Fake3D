@@ -17,7 +17,7 @@ VictoryState::~VictoryState() = default;
 
 void VictoryState::Initialize()
 {
-    m_test.LoadBMP("Assets/Test.bmp");
+    m_test.LoadBMP("Assets/Sprites/Test.bmp");
 }
 
 void VictoryState::Update(float dt)

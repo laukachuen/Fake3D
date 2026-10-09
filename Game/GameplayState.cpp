@@ -27,11 +27,11 @@ void GameplayState::Initialize()
     // Wall Textures
     std::vector<std::string> wallTexturePaths =
     {
-        "Assets/Test6.bmp",
-        "Assets/Test2.bmp",
-        "Assets/Test3.bmp",
-        "Assets/Test4.bmp",
-        "Assets/Test5.bmp"
+        "Assets/Sprites/Test6.bmp",
+        "Assets/Sprites/Test2.bmp",
+        "Assets/Sprites/Test3.bmp",
+        "Assets/Sprites/Test4.bmp",
+        "Assets/Sprites/Test5.bmp"
     };
 
     m_wallTextures.reserve(wallTexturePaths.size());
@@ -43,17 +43,17 @@ void GameplayState::Initialize()
     }
 
     // Floor Texture
-    m_floorTexture.LoadBMP("Assets/Test.bmp");
+    m_floorTexture.LoadBMP("Assets/Sprites/Test.bmp");
 
     // Ceiling Texture
-    m_ceilingTexture.LoadBMP("Assets/Test.bmp");
+    m_ceilingTexture.LoadBMP("Assets/Sprites/Test.bmp");
 
     // Sprite Textures
     std::vector<std::string> spriteTexturesPaths =
     {
-        "Assets/Sprite_01.bmp",
-        "Assets/Sprite_02.bmp",
-        "Assets/Sprite_03.bmp"
+        "Assets/Sprites/Sprite_01.bmp",
+        "Assets/Sprites/Sprite_02.bmp",
+        "Assets/Sprites/Sprite_03.bmp"
     };
 
     m_spriteTextures.reserve(spriteTexturesPaths.size());
