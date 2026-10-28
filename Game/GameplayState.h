@@ -40,12 +40,21 @@ private:
     bool IsWall(float x, float y) const;
     bool CanMove(float x, float y) const;
 
+    void UpdateMinimap();
+    void DrawMinimap();
+
 private:
     // MAP
-    static constexpr int TILE_SIZE = 32;
+    static constexpr int TILE_SIZE = 15;
     static constexpr int TILE_GAP = 1;
 
     MazeGenereator m_mazeGenerator;
+
+    // MINIMAP
+    std::vector<std::vector<bool>> m_minimap;
+    static constexpr int MINIMAP_WIDTH = 160;
+    static constexpr int MINIMAP_HEIGHT = 160;
+    static constexpr int PLAYER_MARKER_SIZE = 5;
 
     // PLAYER
     float m_playerX = 1.5f;

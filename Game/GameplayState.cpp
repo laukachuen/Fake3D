@@ -73,10 +73,16 @@ void GameplayState::Initialize()
     };
 
     m_zBuffer.resize(800, 0.0f);
+
+    // Minimap
+    m_minimap.clear();
+    m_minimap.resize(m_mazeGenerator.GetHeight(), std::vector<bool>(m_mazeGenerator.GetWidth(), false));
+    UpdateMinimap();
 }
 
 void GameplayState::Update(float dt)
 {
+    // Player
     if (m_context.kbd.IsKeyHeld('A'))
     {
         float oldDirX = m_dirX;
@@ -125,33 +131,40 @@ void GameplayState::Update(float dt)
         m_playerY = newY;
     }
 
+    // Minimap
+    UpdateMinimap();
+
+    // State Change
     if (m_context.kbd.IsKeyTriggered(VK_ESCAPE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_context));
     }
+
     if (m_context.kbd.IsKeyTriggered(VK_SPACE))
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
     }
 
-    if (m_mazeGenerator.GetMap()[static_cast<int>(m_playerY)][static_cast<int>(m_playerX)] == TileType::Goal)
-    {
-        m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
-    }
+    // if (m_mazeGenerator.GetMap()[static_cast<int>(m_playerY)][static_cast<int>(m_playerX)] == TileType::Goal)
+    // {
+    //     m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
+    // }
 }
 
 void GameplayState::Draw()
 {
     m_context.gfx.GetScreenBuffer().Clear(Color::Black());
 
-    //Draw3DWalls();
+    Draw3DWalls();
     //Draw3DFloorAndCeiling();
     //Draw3DTexWalls();
     //DrawSprites();
 
-    Draw2DMap();
-    Draw2DRays();
-    Draw2DPlayer();
+    DrawMinimap();
+
+    //Draw2DMap();
+    //Draw2DRays();
+    //Draw2DPlayer();
 }
 
 void GameplayState::Finalize()
@@ -710,3 +723,113 @@ bool GameplayState::CanMove(float x, float y) const
         !IsWall(x, y + PLAYER_RADIUS) &&
         !IsWall(x + PLAYER_RADIUS, y + PLAYER_RADIUS);
 }
+
+void GameplayState::UpdateMinimap()
+{
+    int mapWidth = m_mazeGenerator.GetWidth();
+    int mapHeight = m_mazeGenerator.GetHeight();
+
+    int mapX = static_cast<int>(m_playerX);
+    int mapY = static_cast<int>(m_playerY);
+
+    if (mapX < 0 || mapX >= mapWidth ||
+        mapY < 0 || mapY >= mapHeight)
+    {
+        return;
+    }
+
+    m_minimap[mapY][mapX] = true;
+}
+
+void GameplayState::DrawMinimap()
+{
+    const auto& map = m_mazeGenerator.GetMap();
+    const int mapWidth = m_mazeGenerator.GetWidth();
+    const int mapHeight = m_mazeGenerator.GetHeight();
+
+    if (mapWidth <= 0 || mapHeight <= 0)
+    {
+        return;
+    }
+
+    // Draw a fixed-size background
+    for (int y = 0; y < MINIMAP_HEIGHT; ++y)
+    {
+        for (int x = 0; x < MINIMAP_WIDTH; ++x)
+        {
+            m_context.gfx.GetScreenBuffer().SetPixel(x, y, Color::Black());
+        }
+    }
+
+    // Draw explored grids
+    for (int y = 0; y < mapHeight; ++y)
+    {
+        for (int x = 0; x < mapWidth; ++x)
+        {
+            if (!m_minimap[y][x])
+            {
+                continue;
+            }
+
+            Color tileColor = Color::White();
+
+            if (map[y][x] == TileType::Wall)
+            {
+                tileColor = Color::Gray();
+            }
+            else if (map[y][x] == TileType::Goal)
+            {
+                tileColor = Color::Yellow();
+            }
+
+            const int startX = x * MINIMAP_WIDTH / mapWidth;
+            const int startY = y * MINIMAP_HEIGHT / mapHeight;
+            const int endX = (x + 1) * MINIMAP_WIDTH / mapWidth;
+            const int endY = (y + 1) * MINIMAP_HEIGHT / mapHeight;
+
+            const int gapX = (endX - startX > TILE_GAP) ? TILE_GAP : 0;
+            const int gapY = (endY - startY > TILE_GAP) ? TILE_GAP : 0;
+
+            for (int py = startY; py < endY - gapY; ++py)
+            {
+                for (int px = startX; px < endX - gapX; ++px)
+                {
+                    m_context.gfx.GetScreenBuffer().SetPixel(px, py, tileColor);
+                }
+            }
+        }
+    }
+
+    // Draw the player's current position
+    const int playerMapX = static_cast<int>(m_playerX);
+    const int playerMapY = static_cast<int>(m_playerY);
+
+    if (playerMapX < 0 || playerMapX >= mapWidth ||
+        playerMapY < 0 || playerMapY >= mapHeight)
+    {
+        return;
+    }
+
+    const int cellStartX = playerMapX * MINIMAP_WIDTH / mapWidth;
+    const int cellStartY = playerMapY * MINIMAP_HEIGHT / mapHeight;
+    const int cellEndX = (playerMapX + 1) * MINIMAP_WIDTH / mapWidth;
+    const int cellEndY = (playerMapY + 1) * MINIMAP_HEIGHT / mapHeight;
+
+    const int cellWidth = cellEndX - cellStartX;
+    const int cellHeight = cellEndY - cellStartY;
+
+    const int markerWidth = std::min(PLAYER_MARKER_SIZE, cellWidth);
+    const int markerHeight = std::min(PLAYER_MARKER_SIZE, cellHeight);
+
+    const int markerX = cellStartX + (cellWidth - markerWidth) / 2;
+    const int markerY = cellStartY + (cellHeight - markerHeight) / 2;
+
+    for (int y = markerY; y < markerY + markerHeight; ++y)
+    {
+        for (int x = markerX; x < markerX + markerWidth; ++x)
+        {
+            m_context.gfx.GetScreenBuffer().SetPixel(x, y, Color::Cyan());
+        }
+    }
+}
+
