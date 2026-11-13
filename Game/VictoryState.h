@@ -7,6 +7,9 @@ class Keyboard;
 class GameStateManager;
 class Graphics;
 
+class Text;
+class FreeTypeFont;
+
 class VictoryState : public GameState
 {
 public:
@@ -19,6 +22,6 @@ public:
     void Finalize() override;
 
 private:
-    Image m_test;
-
+    std::unique_ptr<FreeTypeFont> m_font;
+    std::unique_ptr<Text> m_victoryText;
 };

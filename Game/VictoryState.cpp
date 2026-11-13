@@ -1,6 +1,8 @@
 #include "VictoryState.h"
 #include "TitleState.h"
 #include "GameplayState.h"
+#include "FreeTypeFont.h"
+#include "Text.h"
 
 #include "Keyboard.h"
 #include "GameStateManager.h"
@@ -10,14 +12,24 @@
 
 VictoryState::VictoryState(Context context)
     : GameState(context)
-{
-}
+{}
 
 VictoryState::~VictoryState() = default;
 
 void VictoryState::Initialize()
 {
-    m_test.LoadBMP("Assets/Sprites/Test.bmp");
+    m_font =  std::make_unique<FreeTypeFont>("Assets/Fonts/kenney_kenney-fonts/Fonts/Kenney Mini Square Mono.ttf", 64);
+    m_victoryText = std::make_unique<Text>(*m_font, "Congratulations", 0, 0, Color::White());
+
+    auto [textWidth, textHeight] = m_victoryText->GetSize();
+
+    const int SCREEN_WIDTH = 800;
+    const int SCREEN_HEIGHT = 600;
+
+    int centerX = (SCREEN_WIDTH - textWidth) / 2;
+    int centerY = (SCREEN_HEIGHT - textHeight) / 2;
+
+    m_victoryText->SetPosition(centerX, centerY - 100);
 }
 
 void VictoryState::Update(float dt)
@@ -35,7 +47,7 @@ void VictoryState::Update(float dt)
 void VictoryState::Draw()
 {
     m_context.gfx.GetScreenBuffer().Clear(Color::Black());
-    m_context.gfx.GetScreenBuffer().DrawImage(m_test, 300, 300);
+    m_victoryText->Draw(m_context.gfx.GetScreenBuffer());
 }
 
 void VictoryState::Finalize()
