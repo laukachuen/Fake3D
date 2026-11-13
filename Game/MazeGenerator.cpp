@@ -66,7 +66,7 @@ void MazeGenereator::Generate(int width, int height)
         }
     }
 
-    m_map[height - 2][width - 2] = TileType::Goal;
+    m_map[m_height - 2][m_width - 2] = TileType::Goal;
 }
 
 const std::vector<std::vector<TileType>>& MazeGenereator::GetMap() const
