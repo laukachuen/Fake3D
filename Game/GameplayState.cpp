@@ -24,8 +24,22 @@ void GameplayState::Initialize()
     // Map Generation
     m_mazeGenerator.Generate(7, 7);
 
-    // Player's Camera Driection
     const auto& map = m_mazeGenerator.GetMap();
+    const int mapWidth = m_mazeGenerator.GetWidth();
+    const int mapHeight = m_mazeGenerator.GetHeight();
+
+    for (int y = 0; y < mapHeight; ++y)
+    {
+        for (int x = 0; x < mapWidth; ++x)
+        {
+            if (map[y][x] != TileType::Wall)
+            {
+                m_totalFloorTiles++;
+            }
+        }
+    }
+
+    // Player's Camera Driection
     if (map[1][2] == TileType::Road) 
     {
         m_dirX = 1.0f; m_dirY = 0.0f;
@@ -158,11 +172,6 @@ void GameplayState::Update(float dt)
     {
         m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
     }
-
-    // if (m_mazeGenerator.GetMap()[static_cast<int>(m_playerY)][static_cast<int>(m_playerX)] == TileType::Goal)
-    // {
-    //     m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
-    // }
 }
 
 void GameplayState::Draw()
@@ -740,6 +749,7 @@ bool GameplayState::CanMove(float x, float y) const
 
 void GameplayState::UpdateMinimap()
 {
+    const auto& map = m_mazeGenerator.GetMap();
     int mapWidth = m_mazeGenerator.GetWidth();
     int mapHeight = m_mazeGenerator.GetHeight();
 
@@ -752,7 +762,19 @@ void GameplayState::UpdateMinimap()
         return;
     }
 
-    m_minimap[mapY][mapX] = true;
+    if (!m_minimap[mapY][mapX])
+    {
+        m_minimap[mapY][mapX] = true;
+        m_exploredFloorTiles++;
+    }
+
+    if (map[mapY][mapX] == TileType::Goal)
+    {
+        if (m_exploredFloorTiles >= m_totalFloorTiles)
+        {
+            m_context.gameStateMgr.RequestStateChange(std::make_unique<VictoryState>(m_context));
+        }
+    }
 }
 
 void GameplayState::DrawMinimap()

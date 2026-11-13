@@ -50,6 +50,9 @@ private:
 
     MazeGenereator m_mazeGenerator;
 
+    int m_totalFloorTiles = 0;
+    int m_exploredFloorTiles = 0;
+
     // MINIMAP
     std::vector<std::vector<bool>> m_minimap;
     static constexpr int MINIMAP_WIDTH = 160;
