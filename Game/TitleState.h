@@ -22,8 +22,6 @@ public:
     void Finalize() override;
 
 private:
-    Image m_test;
-
     std::unique_ptr<FreeTypeFont> m_font;
-    std::unique_ptr<Text> m_text;
+    std::unique_ptr<Text> m_titleText;
 };
