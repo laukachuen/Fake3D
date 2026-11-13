@@ -24,6 +24,20 @@ void GameplayState::Initialize()
     // Map Generation
     m_mazeGenerator.Generate(7, 7);
 
+    // Player's Camera Driection
+    const auto& map = m_mazeGenerator.GetMap();
+    if (map[1][2] == TileType::Road) 
+    {
+        m_dirX = 1.0f; m_dirY = 0.0f;
+    }
+    else if (map[2][1] == TileType::Road) 
+    {
+        m_dirX = 0.0f; m_dirY = 1.0f;
+    }
+
+    m_planeX = -m_dirY * 0.66f;
+    m_planeY = m_dirX * 0.66f;
+
     // Wall Textures
     std::vector<std::string> wallTexturePaths =
     {
