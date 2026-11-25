@@ -3,7 +3,7 @@
 #include "TitleState.h"
 
 App::App()
-    : m_wnd(800, 600, L"My Custom Game Framework", L"../../GameFramework/Framework/Shader/BufferShaders.hlsl")
+    : m_wnd(800, 600, L"My Custom Game Framework", L"../../GameFramework/Framework/Shader/")
     , m_gameStateMgr(m_wnd.kbd, m_wnd.Gfx())
 {
     m_gameStateMgr.RequestStateChange(std::make_unique<TitleState>(m_gameStateMgr.GetContext()));
